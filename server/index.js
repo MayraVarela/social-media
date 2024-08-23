@@ -9,8 +9,14 @@ import morgan from "morgan";
 import path from "path";
 import  {fileURLToPath} from "url";
 import authRoutes from "./routes/auth.js";
-import {register} from "./controllers/auth.js"
+import userRoutes from "./routes/auth.js";
+import postRoutes from "./routes/posts.js";
+import { register } from "./controllers/auth.js";
+import { createPost } from "./controllers/posts.js"
+import { verifyToken } from "./middleware/auth"
 
+
+/*CONFIG*/
 const __filename = fileURLToPath(import.meta.url);
 const __dirname= path.dirname(__filename);dotenv.config();
 
@@ -37,12 +43,17 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-/*Rutas de archivos*/
+/*ROUTES WITH FILES*/
+app.post("/auth/register", upload.single("picture"));
+app.post("/posts", verifyToken,upload.single("picture"), createPost);
 
-app.post("/auth/register", upload.single("picture"), verifyToken, register);
 
+/*ROUTES*/
 app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+app.use("/posts", postRoutes);
 
+/*MONGOOSE SETUP*/
 const PORT = process.env.PORT || 6001;
 mongoose.connect(process.env.MONGO_URL)
 
